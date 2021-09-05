@@ -3,20 +3,22 @@ from scrapy.crawler import CrawlerProcess
 
 
 def parse_items(response):
-        breadcrumbs = response.css('a.breadcrumbs-list__link::text').getall()
-        pn = response.css("span.product-detail-label::text").get()
+        breadcrumbs = response.xpath('//a[@class="breadcrumbs-list__link"]/text()').getall()
+        image_url = response.xpath('//a[@class="show-gallery"]/@href').get()
+        brand = response.xpath("//h1[@class='title']/text()").get()
+        pn = response.xpath("//span[@class='product-detail-label']/text()").get()
         pn1 = response.xpath("//a[@href='/collections/carbon38']/text()").get()
-        pd_name = pn+pn1
-
+        product_name = pn+pn1
         pr = response.xpath('//span[contains(.,"$")]/text()').get()
         price = str(pr)
-        reviews = response.css("div.okeReviews-reviewsSummary-ratingCount span::text").get()
-        size = response.xpath("//a[contains(@class,'active')]").getall()
-        colour = response.css('li a::attr(data-value)').get()
-        t = response.css('div.cc-accordion-item__content.rte.cf::text').get()
-        desc = str(t)
+        reviews = response.xpath("//div[@class='okeReviews-reviewsSummary-ratingCount']/span/text()").get()
+        if reviews is None:
+            reviews = "0 Reviews"
+        size = response.xpath('//*[@id="SingleOptionSelector-1"]/option/text()').getall()
+        colour = response.xpath('//*[@id="SingleOptionSelector-0"]/option/text()').getall()
+        t = response.xpath('/html/head/meta[4]/@content').get()
+        description = str(t)
         sku = response.xpath('//p[contains(.,"SKU")]/text()').get()
-        sk = str(sku)
         yield {
             'breadcrumbs': breadcrumbs,
             'image_url': response.css('a.show-gallery').xpath('@href').get(),
@@ -44,7 +46,8 @@ class ScrapSpider(scrapy.Spider):
             yield response.follow(url.extract(), callback=self.parse_items)
         next_page = response.css('li.item.pages-item-next a::attr(href)').get()
         if next_page is not None:
-            yield response.follow(next_page, callback=self.parse)
+            yield response.follow(next_page, callback=self.parse)
+
     
 #run spider
 process = CrawlerProcess()
