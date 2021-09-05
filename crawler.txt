@@ -15,7 +15,7 @@ def parse_items(response):
         reviews = "0 Reviews"
     size = response.xpath('//*[@id="SingleOptionSelector-1"]/option/text()').getall()
     colour = response.xpath('//*[@id="SingleOptionSelector-0"]/option/text()').getall()
-    t = response.xpath('//div[@class="cc-accordion-item__content.rte.cf"]/text()').get()
+    t = response.xpath('/html/head/meta[4]/@content').get()
     description = str(t)
     sku = response.xpath('//p[contains(.,"SKU")]/text()').get()
     yield {
